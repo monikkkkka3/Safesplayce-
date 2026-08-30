@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safe's Playce — Game Console</title>
+<style>
+  :root{
+    --bg:#071820; --card:#0B2230; --card2:#0E2A3A; --gold:#FFD166; --lav:#C9B8FF;
+    --teal:#8FD8C8; --white:#FFFFFF; --dim:#7FA0AD;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--white);
+    font-family:"DejaVu Sans","Segoe UI",Verdana,Arial,sans-serif;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:18px 14px 30px;
+  }
+  header{text-align:center; margin-bottom:14px;}
+  header h1{color:var(--gold); font-size:26px; letter-spacing:1px;}
+  header p{color:var(--teal); font-size:13px; margin-top:3px;}
+  nav{display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-bottom:16px; max-width:900px;}
+  nav button{
+    background:var(--card); color:var(--white); border:1px solid #1E4152;
+    border-radius:18px; padding:8px 14px; font-size:14px; cursor:pointer;
+  }
+  nav button:hover{border-color:var(--gold);}
+  nav button.active{background:var(--gold); color:#082030; font-weight:bold; border-color:var(--gold);}
+  main{
+    background:var(--card); border:1px solid #1E4152; border-radius:22px;
+    width:100%; max-width:720px; min-height:340px; padding:28px 26px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:14px;
+  }
+  .kicker{color:var(--lav); font-size:14px; text-transform:uppercase; letter-spacing:2px;}
+  .big{color:var(--white); font-size:44px; font-weight:bold; line-height:1.15;}
+  .mid{color:var(--gold); font-size:26px; line-height:1.3;}
+  .def{color:var(--teal); font-size:18px; line-height:1.45; max-width:560px;}
+  .answer{
+    color:var(--white); font-size:22px; background:var(--card2);
+    border:1px dashed var(--gold); border-radius:14px; padding:12px 20px; display:none;
+  }
+  .answer.show{display:block;}
+  .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+  .controls button{
+    border:none; border-radius:16px; padding:12px 22px; font-size:16px; cursor:pointer; font-weight:bold;
+  }
+  #drawBtn{background:var(--gold); color:#082030;}
+  #revealBtn{background:var(--card2); color:var(--lav); border:1px solid #2A5064;}
+  #revealBtn:hover{border-color:var(--lav);}
+  .tiers{display:flex; gap:6px; flex-wrap:wrap; justify-content:center;}
+  .tiers button{
+    background:var(--card2); color:var(--white); border:1px solid #2A5064;
+    border-radius:12px; padding:6px 11px; font-size:13px; cursor:pointer;
+  }
+  .tiers button.active{background:var(--teal); color:#082030; font-weight:bold; border-color:var(--teal);}
+  .count{color:var(--dim); font-size:12px;}
+  footer{
+    margin-top:16px; color:var(--dim); font-size:12px; text-align:center; line-height:1.6; max-width:680px;
+  }
+  footer .crisis{color:var(--teal);}
+  .hint{color:var(--dim); font-size:13px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐝 SAFE'S PLAYCE — GAME CONSOLE</h1>
+  <p>offline word-game dealer · never repeats until the deck runs out · spacebar = draw</p>
+</header>
+
+<nav id="tabs"></nav>
+
+<main id="stage">
+  <div class="kicker" id="kicker">READY</div>
+  <div class="big" id="big">Pick a deck ↑</div>
+  <div class="def" id="def"></div>
+  <div class="answer" id="answer"></div>
+  <div class="tiers" id="tiers" style="display:none"></div>
+  <div class="controls">
+    <button id="drawBtn">🎲 DRAW</button>
+    <button id="revealBtn" style="display:none">👀 REVEAL</button>
+  </div>
+  <div class="count" id="count"></div>
+</main>
+
+<footer>
+  Peer support, not professional help. In crisis: call/text <b>988</b> · text <b>HOME</b> to <b>741741</b> (US) · findahelpline.com (intl)<br>
+  <span class="crisis">LIVE: Tue · Thu 7PM · Sat 3PM · Sun 6PM CT — @safesplayce</span>
+</footer>
+
+<script>
+// ============ DATA ============
+const BEE = {
+  1:[["calm",""],["breathe",""],["brave",""],["gentle",""],["hope",""],["joy",""],["kind",""],["laugh",""],["mindful",""],["peace",""],["rest",""],["safe",""],["smile",""],["trust",""],["warm",""],["bloom",""],["care",""],["dream",""],["friend",""],["happy",""],["hug",""],["light",""],["love",""],["music",""],["nature",""],["quiet",""],["soft",""],["strong",""],["welcome",""],["wonder",""]],
+  2:[["balance",""],["comfort",""],["courage",""],["discover",""],["embrace",""],["forgive",""],["gratitude",""],["harmony",""],["healing",""],["honesty",""],["inspire",""],["journey",""],["kindness",""],["laughter",""],["listen",""],["patience",""],["presence",""],["reflect",""],["resilient",""],["serenity",""],["soothing",""],["thankful",""],["tender",""],["together",""],["unwind",""],["wisdom",""]],
+  3:[["affirmation","a positive statement you repeat to yourself"],["appreciation","recognizing the value of someone or something"],["boundaries","limits you set to protect your energy"],["compassion","caring about someone's pain + wanting to help"],["confidence","steady belief in yourself"],["dedication","sticking with something that matters"],["determination","pushing toward a goal despite obstacles"],["encouragement","giving someone courage"],["enthusiasm","excited, bubbling energy"],["humility","staying humble; knowing you're not above others"],["imagination","the mind's movie studio"],["intention","a deliberate aim"],["meditation","training attention, usually quietly"],["motivation","the engine that gets you moving"],["nurturing","helping something grow with care"],["perseverance","persisting when it's hard"],["positivity","leaning toward the good"],["relaxation","letting tension go"],["stability","feeling steady and secure"],["support","holding someone up"],["therapy","professional help for the mind and heart"],["tranquility","deep calm"],["validation","having your feelings recognized as real"],["vulnerability","showing your true self even when it's scary"]],
+  4:[["acceptance","making peace with what is"],["bittersweet","happy and sad at the same time"],["capricious","unpredictable; changes on a whim"],["conscientious","careful, thorough, doing it right"],["contentment","satisfied peacefulness — wanting what you have"],["coexistence","living together peacefully"],["discouraged","having lost your drive or hope"],["eloquent","speaking fluently and movingly"],["empathy","feeling WITH someone, not just for them"],["exhaustion","running on empty"],["flourishing","actively thriving, not just surviving"],["genuine","real; not a performance"],["groundwork","the early work everything else is built on"],["inconsistency","not staying steady or regular"],["introspection","looking inward at your own thoughts"],["lighthearted","cheerful; not weighed down"],["melancholy","deep, thoughtful sadness"],["mindfulness","full attention on the present moment"],["nonjudgmental","observing without judging"],["overwhelmed","buried under more than you can carry"],["perspective","the angle you see from"],["quietude","calm stillness"],["reassurance","comfort that restores confidence"],["resourceful","solving problems with whatever's on hand"],["restlessness","unable to settle; antsy"],["self-compassion","treating yourself with the kindness you'd give a friend"],["sincerity","honesty of feeling"],["wistful","softly longing for something missed"]],
+  5:[["bougainvillea","climbing plant with blazing pink-red bracts"],["chrysanthemum","the big fall-blooming flower"],["claustrophobia","fear of enclosed spaces"],["conscience","your inner sense of right and wrong"],["conscientiousness","the trait of being careful and dutiful"],["dichotomy","a split into two opposites"],["euphoria","intense, floating happiness"],["existential","about existence and meaning (3am thoughts)"],["gregarious","loves being around people"],["hypocrisy","preaching one thing, doing another"],["idyllic","peacefully perfect; charmingly simple"],["juxtapose","to place side by side for contrast"],["kaleidoscope","tube of shifting colorful patterns"],["liaison","the connection; the go-between"],["nostalgia","bittersweet longing for the past"],["onomatopoeia","words that imitate sounds — buzz!"],["oscillate","swing back and forth"],["procrastination","the art of doing everything but the thing"],["questionnaire","a written set of questions"],["reminiscent","recalling, or reminding you of the past"],["serendipity","a lucky, delightful accidental find"],["soliloquy","a speech given alone, thoughts out loud"],["synesthesia","senses blending — seeing music as color"],["unequivocally","without any doubt whatsoever"],["vernacular","the everyday language of a place or group"],["whimsicality","playful, fanciful quality"],["zealously","with fiery, all-in enthusiasm"]]
+};
+const TIER_NAMES = {1:"WARM-UP",2:"HIVE",3:"REAL ONES",4:"STING",5:"PLAYCE KILLER"};
+const LADDERS = [
+ {s:"PAIN",e:"GAIN",p:["pain","gain"],d:"🌱 warm-up joke"},
+ {s:"DARK",e:"DAWN",p:["dark","darn","dawn"],d:"🌱"},
+ {s:"HOPE",e:"HOME",p:["hope","dome","home"],d:"🌱"},
+ {s:"BEST",e:"WISH",p:["best","west","wise","wish"],d:"🌱"},
+ {s:"LOVE",e:"HOME",p:["love","dove","dome","home"],d:"🌿"},
+ {s:"SMILE",e:"SHINE",p:["smile","while","whine","shine"],d:"🌿"},
+ {s:"HEAD",e:"TAIL",p:["head","heal","teal","tail"],d:"🌿"},
+ {s:"COLD",e:"WARM",p:["cold","cord","word","ward","warm"],d:"🌿🌿"},
+ {s:"MIND",e:"CARE",p:["mind","mend","sand","sane","cane","care"],d:"🌿🌿"},
+ {s:"FEAR",e:"CALM",p:["fear","bear","beat","belt","bell","ball","bald","balm","calm"],d:"🌿🌿🌿 marathon"},
+ {s:"LOST",e:"SAFE",p:["lost","last","pact","pace","page","pale","sale","sage","safe"],d:"🌿🌿🌿 marathon"}
+];
+const CATEGORIES = ["things that calm you down","self-care acts","compliments you could give a stranger","words that feel like a hug","things in a playce like ours","ways to relax","things you're grateful for","good advice","things to do on a mental health day","sounds you love","places to nap","breakfast foods","ice cream flavors","things that are soft","things in your pocket","things you do on Sunday","movie snacks","comfort shows (no spoilers!)","things at a coffee shop","smells that bring back memories","kinds of weather","things at the beach","animals that sleep a lot","green things","things at a farmer's market","things in the night sky","flowers","trees","things you'd see on a hike","bodies of water","board games","playground equipment","party games","superpowers you wish you had","carnival things","instruments","card games","video games that feel like a hug","toys from the 90s/2000s","things in a backpack","jobs that help people","places you feel safest","kinds of hugs","nicknames","dance styles","ways to say 'I love you' without words","things at a family cookout","road trip stops","cities in Texas","places you'd take a first date","excuses for being late","things that are yellow","things that are heavier than they look","words that rhyme with 'playce'","things you'd bring to a desert island","flavors of chips","kinds of shoes","things at a birthday party","candle scents"];
+const LETTERS = ["A","B","C","D","F","G","H","J","K","L","M","N","P","R","S","T","V","W","Y","S","T","R","Q","X","Z"];
+const PHRASES = [
+ ["A watched pot never…","boils"],["Actions speak louder than…","words"],["A penny for your…","thoughts"],
+ ["Better late than…","never"],["Birds of a feather flock…","together"],["Curiosity killed the cat — but satisfaction…","brought it back"],
+ ["Don't cry over spilled…","milk"],["Don't put all your eggs in…","one basket"],["Every cloud has…","a silver lining"],
+ ["Good things come to those who…","wait"],["Haste makes…","waste"],["If it ain't broke…","don't fix it"],
+ ["It takes two to…","tango"],["Laughter is the best…","medicine"],["Let sleeping dogs…","lie"],
+ ["Look on the bright…","side"],["No man is an…","island"],["Out of the frying pan, into…","the fire"],
+ ["Practice makes…","perfect"],["Rome wasn't built in…","a day"],["Slow and steady wins…","the race"],
+ ["The early bird catches…","the worm"],["The grass is always greener…","on the other side"],["There's no place like…","home"],
+ ["Time heals all…","wounds"],["Two heads are better than…","one"],["When life gives you lemons…","make lemonade"],
+ ["Where there's a will…","there's a way"],["You can't have your cake and…","eat it too"],["You can't judge a book by…","its cover"]
+];
+const WOTN = [
+ ["resilience","bouncing back — not never bending"],["serenity","unshakable calm"],["gratitude","noticing what's good, on purpose"],
+ ["wanderlust","the ache to go somewhere new"],["nostalgia","the past giving you a hug (or a bruise)"],["euphoria","floating happiness"],
+ ["contentment","wanting what you already have"],["harmony","things that are different, sounding good together"],
+ ["curiosity","the itch to know"],["forgiveness","setting a prisoner free — and realizing it was you"],
+ ["integrity","being the same person when nobody's watching"],["empathy","feeling with someone, not just for them"],
+ ["tranquility","deep, still water calm"],["renewal","starting fresh, again on purpose"],["tenacity","the grip that won't let go"],
+ ["grace","gentleness given where it wasn't earned"],["wonder","letting the world stay big"],["comfort","the body's version of home"],
+ ["balance","not falling — swaying"],["courage","fear that decided to move anyway"],["patience","waiting without punishing yourself"],
+ ["hope","the stubborn belief in later"],["healing","slow, nonlinear, still counts"],["softness","strength that refuses to harden"],
+ ["joy","happiness with its shoes off"],["acceptance","putting the weight down"],["presence","being all the way here"],
+ ["gentleness","handling hearts like eggs"],["wholeness","you, unbroken, even if you're cracked"],["rest","productive. full stop."]
+];
+const FEELINGS = [
+ ["STORMY","anxious"],["STORMY","overwhelmed"],["STORMY","restless"],["STORMY","irritable"],["STORMY","panicked"],
+ ["STORMY","frustrated"],["STORMY","stressed"],["STORMY","jittery"],["STORMY","wound-up"],["STORMY","angry"],
+ ["HEAVY","sad"],["HEAVY","lonely"],["HEAVY","drained"],["HEAVY","numb"],["HEAVY","empty"],["HEAVY","tired"],
+ ["HEAVY","heavy"],["HEAVY","hopeless"],["HEAVY","blue"],["HEAVY","stuck"],
+ ["BRIGHT","excited"],["BRIGHT","giddy"],["BRIGHT","inspired"],["BRIGHT","pumped"],["BRIGHT","eager"],
+ ["BRIGHT","playful"],["BRIGHT","bubbly"],["BRIGHT","brave"],["BRIGHT","electric"],["BRIGHT","hopeful"],
+ ["CALM","peaceful"],["CALM","content"],["CALM","cozy"],["CALM","safe"],["CALM","grateful"],["CALM","mellow"],
+ ["CALM","serene"],["CALM","snug"],["CALM","loved"],["CALM","lighter"]
+];
+const MYTHS = [
+ ["\u201CAnxiety is just being dramatic.\u201D","MYTH","Anxiety is a real stress response — the body's alarm system, not a character flaw."],
+ ["\u201CYou can just snap out of depression.\u201D","MYTH","It's not a mood switch; recovery takes support, time, and often professional help."],
+ ["\u201CTherapy is only for people in crisis.\u201D","MYTH","Plenty go for growth and maintenance — a gym for your mind."],
+ ["\u201CMental health struggles are rare.\u201D","MYTH","Roughly 1 in 5 US adults experiences one in a given year. Never the only one in the room."],
+ ["\u201CAsking for help is weakness.\u201D","MYTH","It's a skill — and the strong move."],
+ ["\u201CSelf-care is selfish.\u201D","MYTH","You can't pour from an empty cup."],
+ ["\u201CCrying means you're weak.\u201D","MYTH","It's a healthy release — your body decompressing."],
+ ["\u201CPositive thinking cures depression.\u201D","MYTH","Positivity can ride along; it can't drive."],
+ ["\u201CKids can't struggle with mental health.\u201D","MYTH","They can — and early support helps a lot."],
+ ["\u201CYou need a diagnosis to benefit from coping tools.\u201D","MYTH","Breathing, movement, and sleep help everyone."],
+ ["\u201CExercise is one of the most evidence-backed mood lifters.\u201D","FACT","Movement is legit medicine for mood."],
+ ["\u201CSleep affects your mental health.\u201D","FACT","Sleep and mood run on the same wiring."],
+ ["\u201CMental health has many causes — biology, experiences, environment.\u201D","FACT","No single cause, no single blame."],
+ ["\u201CTalking about feelings makes them worse.\u201D","MYTH","Naming feelings reliably lowers their intensity."],
+ ["\u201CConnection is a real protective factor.\u201D","FACT","That's the whole point of this playce."]
+];
+const STORIES = [
+ "Once upon a playce, the bee flew in through the window…",
+ "Nobody in the playce knew it yet, but tonight was the night…",
+ "The spelling bee trophy had gone missing, and everyone was a suspect…",
+ "The word of the night started glowing on the screen…",
+ "It was 6:59 PM on a Tuesday, and the hive was buzzing because…",
+ "The cozy game save file had one last level, and it was called…",
+ "In a land where feelings were weather, today's forecast was…",
+ "The group chat went quiet, which could only mean…",
+ "Somewhere over Dallas, a star decided to…",
+ "The dictionary opened itself to the one page that said…"
+];
+const RHYMES = ["playce","bright","day","grow","free","home","light","mind","night","rest","safe","shine","song","star","sun","true","warm","wish","you"];
+
+// ============ ENGINE ============
+const DECKS = {
+  bee:    {name:"🐝 Spelling Bee", kicker:()=>TIER_NAMES[state.tier]+" ROUND", draw:()=>pick(BEE[state.tier]), render:c=>{big.textContent=c[0]; def.textContent=c[1]||"say it · use it in a sentence · chat spells"; hideReveal();}, tiers:true},
+  ladder: {name:"🪜 Word Ladder", kicker:()=>"ONE LETTER AT A TIME", draw:()=>pick(LADDERS), render:c=>{big.textContent=c.s+" → "+c.e; def.textContent=c.d+" · "+(c.p.length-1)+" steps"; showReveal(c.p.join(" → "));}},
+  cat:    {name:"🗂 Categories", kicker:()=>"60 SECONDS · GO", draw:()=>[pick(CATEGORIES), pick(LETTERS)], render:c=>{big.textContent=c[1]; def.textContent=c[0]; hideReveal();}},
+  phrase: {name:"🧩 Finish the Phrase", kicker:()=>"CHAT COMPLETES IT", draw:()=>pick(PHRASES), render:c=>{big.textContent=c[0]; def.textContent=""; showReveal(c[1]);}},
+  wotn:   {name:"✨ Word of the Night", kicker:()=>"SPELL · DEFINE · USE IT", draw:()=>pick(WOTN), render:c=>{big.textContent=c[0].toUpperCase(); def.textContent=c[1]+" — everyone use it in a sentence about your week"; hideReveal();}},
+  feel:   {name:"💛 Name It to Tame It", kicker:()=>"FEELINGS WORD BANK", draw:()=>pick(FEELINGS), render:c=>{big.textContent=c[1]; def.textContent="the "+c[0]+" list — type a time you felt it this week"; hideReveal();}},
+  myth:   {name:"🧠 Myth or Fact?", kicker:()=>"CHAT VOTES FIRST", draw:()=>pick(MYTHS), render:c=>{big.style.fontSize="30px"; big.textContent=c[0]; def.textContent="Myth or Fact? Vote in chat!"; showReveal("❗ "+c[1]+" — "+c[2]); big.style.fontSize="";}, after:()=>{}},
+  story:  {name:"📖 Story Chain", kicker:()=>"CHAT ADDS 3–5 WORDS A TURN", draw:()=>pick(STORIES), render:c=>{big.style.fontSize="30px"; big.textContent=c; def.textContent="you narrate · chat builds · kindness required"; hideReveal(); big.style.fontSize="";}},
+  rhyme:  {name:"🎵 Rhyme Time", kicker:()=>"CHAIN IT · BREAK IT = THE BEE STINGS", draw:()=>pick(RHYMES), render:c=>{big.textContent=c.toUpperCase(); def.textContent="rhyme it forward — homophones allowed, rapping optional"; hideReveal();}}
+};
+
+const state = {deck:"bee", tier:1, bags:{}};
+const $ = id=>document.getElementById(id);
+const kicker=$("kicker"), big=$("big"), def=$("def"), answer=$("answer"),
+      revealBtn=$("revealBtn"), drawBtn=$("drawBtn"), count=$("count"),
+      tiersBox=$("tiers");
+
+// shuffle-bag draw: no repeats until the deck is exhausted
+function pick(arr){
+  const key = state.deck + (DECKS[state.deck].tiers ? state.tier : "");
+  if(!state.bags[key] || state.bags[key].length===0){
+    state.bags[key] = arr.map((_,i)=>i);
+    for(let i=state.bags[key].length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [state.bags[key][i],state.bags[key][j]]=[state.bags[key][j],state.bags[key][i]];
+    }
+    if(arr.length>3) state.bags[key].pop(); // avoid instant repeat of the last card
+  }
+  return arr[state.bags[key].pop()];
+}
+function showReveal(txt){answer.textContent=txt; answer.classList.remove("show"); revealBtn.style.display="inline-block"; answer.style.display="none";}
+function hideReveal(){revealBtn.style.display="none"; answer.style.display="none"; answer.classList.remove("show");}
+function draw(){
+  const d=DECKS[state.deck];
+  kicker.textContent=d.kicker();
+  d.render(d.draw());
+  count.textContent="deck "+(state.deck+(d.tiers?state.tier:""))+" · "+(state.bags[state.deck+(d.tiers?state.tier:"")]?state.bags[state.deck+(d.tiers?state.tier:"")].length:0)+" left in bag";
+}
+revealBtn.addEventListener("click",()=>answer.classList.toggle("show"));
+drawBtn.addEventListener("click",draw);
+document.addEventListener("keydown",e=>{
+  if(e.code==="Space"||e.code==="Enter"){e.preventDefault(); draw();}
+  if(e.key==="r"||e.key==="R"){answer.classList.toggle("show");}
+});
+
+// tabs
+const nav=$("tabs");
+Object.keys(DECKS).forEach(k=>{
+  const b=document.createElement("button");
+  b.textContent=DECKS[k].name;
+  b.onclick=()=>{
+    state.deck=k;
+    [...nav.children].forEach(c=>c.classList.remove("active"));
+    b.classList.add("active");
+    tiersBox.style.display=DECKS[k].tiers?"flex":"none";
+    hideReveal(); draw();
+  };
+  nav.appendChild(b);
+});
+// bee tier selector
+[1,2,3,4,5].forEach(t=>{
+  const b=document.createElement("button");
+  b.textContent=TIER_NAMES[t];
+  b.onclick=()=>{state.tier=t; [...tiersBox.children].forEach(c=>c.classList.remove("active")); b.classList.add("active"); draw();};
+  if(t===1)b.classList.add("active");
+  tiersBox.appendChild(b);
+});
+// boot
+nav.children[0].classList.add("active");
+draw();
+</script>
+</body>
+</html>
