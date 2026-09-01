@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safe's Playce — Coping Toolbox Console</title>
+<style>
+  :root{
+    --bg:#071820; --card:#0B2230; --card2:#0E2A3A; --gold:#FFD166; --lav:#C9B8FF;
+    --teal:#8FD8C8; --white:#FFFFFF; --dim:#7FA0AD;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--white);
+    font-family:"DejaVu Sans","Segoe UI",Verdana,Arial,sans-serif;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:18px 14px 30px;
+  }
+  header{text-align:center; margin-bottom:14px;}
+  header h1{color:var(--gold); font-size:24px; letter-spacing:1px;}
+  header p{color:var(--teal); font-size:13px; margin-top:3px;}
+  nav{display:flex; gap:7px; justify-content:center; margin-bottom:16px; flex-wrap:wrap;}
+  nav button{
+    background:var(--card); color:var(--white); border:1px solid #1E4152;
+    border-radius:18px; padding:8px 16px; font-size:14px; cursor:pointer;
+  }
+  nav button:hover{border-color:var(--gold);}
+  nav button.active{background:var(--gold); color:#082030; font-weight:bold; border-color:var(--gold);}
+  .page{display:none; width:100%; max-width:760px; flex-direction:column; align-items:center;}
+  .page.show{display:flex;}
+  .panel{
+    background:var(--card); border:1px solid #1E4152; border-radius:22px;
+    width:100%; padding:26px; text-align:center; display:flex; flex-direction:column;
+    align-items:center; gap:12px;
+  }
+  .kicker{color:var(--lav); font-size:13px; text-transform:uppercase; letter-spacing:2px;}
+  /* breathing */
+  .breath-stage{height:340px; display:flex; align-items:center; justify-content:center; position:relative; width:100%;}
+  .ring{
+    position:absolute; width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FFD166 0%, #E8A93D 55%, #B97E1E 100%);
+    box-shadow:0 0 70px 18px rgba(255,209,102,.30);
+    transform:scale(1); transition:transform 4s ease-in-out;
+  }
+  .halo{
+    position:absolute; width:300px; height:300px; border-radius:50%;
+    border:2px dashed rgba(143,216,200,.45); transition:transform 4s ease-in-out;
+  }
+  .phase{
+    position:relative; z-index:2; color:#082030; font-weight:bold; font-size:26px;
+    text-align:center; text-shadow:0 1px 0 rgba(255,255,255,.35);
+  }
+  .phase small{display:block; font-size:15px; font-weight:normal; color:#5A4310;}
+  .patterns{display:flex; gap:6px; flex-wrap:wrap; justify-content:center;}
+  .patterns button{
+    background:var(--card2); color:var(--white); border:1px solid #2A5064;
+    border-radius:12px; padding:6px 11px; font-size:13px; cursor:pointer;
+  }
+  .patterns button.active{background:var(--teal); color:#082030; font-weight:bold; border-color:var(--teal);}
+  .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+  .controls button{border:none; border-radius:16px; padding:12px 24px; font-size:16px; font-weight:bold; cursor:pointer;}
+  #startBtn{background:var(--gold); color:#082030;}
+  #startBtn.stop{background:#E8709A; color:#fff;}
+  .stat{color:var(--dim); font-size:13px;}
+  /* skills */
+  .skill-name{color:var(--gold); font-size:34px; font-weight:bold; line-height:1.15;}
+  .skill-meta{color:var(--lav); font-size:14px;}
+  .skill-script{
+    color:var(--white); font-size:17px; line-height:1.6; max-width:600px;
+    background:var(--card2); border-radius:14px; padding:16px 20px; text-align:left;
+  }
+  .skill-script b{color:var(--teal);}
+  /* wind-down */
+  .steps{list-style:none; width:100%; max-width:620px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .steps li{
+    background:var(--card2); border-radius:14px; padding:13px 18px; font-size:16px; line-height:1.5;
+    border-left:4px solid var(--teal); cursor:pointer;
+  }
+  .steps li.done{opacity:.45; border-left-color:var(--gold); text-decoration:line-through;}
+  .steps li b{color:var(--gold);}
+  .timer-face{color:var(--white); font-size:64px; font-weight:bold; letter-spacing:2px; font-variant-numeric:tabular-nums;}
+  .timer-face.done{color:var(--gold);}
+  footer{
+    margin-top:16px; color:var(--dim); font-size:12px; text-align:center; line-height:1.6; max-width:680px;
+  }
+  footer .crisis{color:var(--teal);}
+  .hint{color:var(--dim); font-size:13px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧰 SAFE'S PLAYCE — COPING TOOLBOX</h1>
+  <p>breathing pacer · guided skills dealer · sunday wind-down · works offline</p>
+</header>
+
+<nav id="tabs">
+  <button data-page="breathe" class="active">🫁 Breathe</button>
+  <button data-page="skills">🧰 Toolbox Time</button>
+  <button data-page="winddown">🌙 Wind-Down</button>
+</nav>
+
+<!-- ============ BREATHE ============ -->
+<div class="page show" id="page-breathe">
+  <div class="panel">
+    <div class="kicker" id="patTag">BOX BREATHING · 4-4-4-4</div>
+    <div class="breath-stage">
+      <div class="halo" id="halo"></div>
+      <div class="ring" id="ring"></div>
+      <div class="phase" id="phaseTxt">ready?<small>press start · follow the light</small></div>
+    </div>
+    <div class="patterns" id="patterns"></div>
+    <div class="controls">
+      <button id="startBtn">▶ START</button>
+    </div>
+    <div class="stat" id="breathStat">0 cycles</div>
+    <div class="hint">do it WITH chat on camera — 8–10 cycles is a full reset</div>
+  </div>
+</div>
+
+<!-- ============ SKILLS ============ -->
+<div class="page" id="page-skills">
+  <div class="panel">
+    <div class="kicker">TOOLBOX TIME · PEER SUPPORT, NOT THERAPY</div>
+    <div class="skill-name" id="skillName">Press DRAW</div>
+    <div class="skill-meta" id="skillMeta"></div>
+    <div class="skill-script" id="skillScript"></div>
+    <div class="controls">
+      <button id="skillDraw" style="background:var(--gold); color:#082030;">🎲 DRAW A SKILL</button>
+    </div>
+    <div class="stat" id="skillCount"></div>
+    <div class="hint">spacebar = draw · demo one per stream · 2–5 minutes is plenty</div>
+  </div>
+</div>
+
+<!-- ============ WIND-DOWN ============ -->
+<div class="page" id="page-winddown">
+  <div class="panel">
+    <div class="kicker">SLOW SUNDAY CLOSE · LAST 10 MINUTES</div>
+    <div class="timer-face" id="timerFace">5:00</div>
+    <div class="controls">
+      <button id="timerStart" style="background:var(--gold); color:#082030;">▶ START</button>
+      <button id="timerReset" style="background:var(--card2); color:var(--lav); border:1px solid #2A5064;">↺ RESET</button>
+    </div>
+    <div class="patterns">
+      <button data-min="1">1 min</button>
+      <button data-min="2">2 min</button>
+      <button data-min="5" class="active">5 min</button>
+      <button data-min="10">10 min</button>
+    </div>
+    <ol class="steps" id="windSteps"></ol>
+    <div class="hint">tap a step to check it off · end every stream on purpose</div>
+  </div>
+</div>
+
+<footer>
+  Peer support, not professional help. In crisis: call/text <b>988</b> · text <b>HOME</b> to <b>741741</b> (US) · findahelpline.com (intl)<br>
+  <span class="crisis">LIVE: Tue · Thu 7PM · Sat 3PM · Sun 6PM CT — @safesplayce</span>
+</footer>
+
+<script>
+// ================= PATTERNS =================
+const PATTERNS=[
+ {name:"Box", tag:"BOX BREATHING · 4-4-4-4 · steady, Navy-SEAL calm", steps:[["Breathe in",4],["Hold",4],["Breathe out",4],["Hold",4]]},
+ {name:"4-7-8", tag:"4-7-8 · long hold, longer out · sleepiest", steps:[["Breathe in",4],["Hold",7],["Breathe out",8]]},
+ {name:"5-5", tag:"COHERENT 5-5 · in and out even · heart balance", steps:[["Breathe in",5],["Breathe out",5]]},
+ {name:"4-6", tag:"LONG EXHALE 4-6 · out longer than in · anxiety down", steps:[["Breathe in",4],["Breathe out",6]]}
+];
+// ================= SKILLS =================
+const SKILLS=[
+ {n:"Physiological Sigh", m:"30 seconds · instant · great mid-spiral", s:"Two quick inhales through the nose — one big, one small top-up — then one looong slow exhale through the mouth. Do it 3 times. This is the fastest known off-switch for the stress response. <b>Say:</b> \"Big sip... little sip... now pour it all out slowly.\""},
+ {n:"5-4-3-2-1 Grounding", m:"3 minutes · anxiety · anywhere", s:"Name, out loud or in chat: <b>5</b> things you can SEE, <b>4</b> you can FEEL, <b>3</b> you can HEAR, <b>2</b> you can SMELL, <b>1</b> you can TASTE. The senses are a leash for a runaway mind. Chat types their answers as we go."},
+ {n:"Box Breathing", m:"2 minutes · steady · pre-hard-thing", s:"In 4 · hold 4 · out 4 · hold 4. Eight rounds. Switch to the Breathe tab and let the light lead. <b>Say:</b> \"Square it up with me — in... hold... out... hold...\""},
+ {n:"Progressive Muscle Relaxation (mini)", m:"4 minutes · tension · before bed", s:"Squeeze each body part for 5 seconds, then release hard and notice the warmth: hands → shoulders → face → legs. Tension is a faucet; this shows you where the handles are."},
+ {n:"Body Scan", m:"3 minutes · check-engine light", s:"Close your eyes or soften your gaze. Slowly move attention from the top of your head to your toes, just NOTICING — not fixing. <b>Say:</b> \"We're not repairing anything. We're just knocking on doors to see who's home.\""},
+ {n:"Brain Dump", m:"5 minutes · racing thoughts · 3am brain", s:"Set a timer. Write everything in your head — messy, unsorted, no sentences needed. Then close the book. The thoughts will keep; they now have an address. <b>Say:</b> \"If it's written down, it stops doing laps.\""},
+ {n:"Alphabet Grounding", m:"3 minutes · panic · playful", s:"Pick a category (animals, foods, names) and find one for every letter A to Z as a group. X and Q are community property. Demanding, simple, social — leaves no bandwidth for panic."},
+ {n:"Gratitude Three", m:"2 minutes · heaviness · any night", s:"Type THREE things that went right today — tiny counts. Coffee counts. A green light counts. Name them in chat. Gratitude isn't pretending it's all fine; it's refusing to let the bad write the whole page."},
+ {n:"Self-Compassion Break", m:"3 minutes · after a hard day", s:"Three steps. 1) <b>Notice:</b> \"This is a moment of struggle.\" 2) <b>Normalize:</b> \"Struggle is part of being human — I'm not the only one in this.\" 3) <b>Kindness:</b> hand on heart, \"May I be kind to myself right now.\" Say it slower than feels natural."},
+ {n:"Worry Postponement", m:"2 minutes · loop thoughts", s:"Schedule the worry. Write it down and give it an official appointment: \"I'll worry about you at 6pm tomorrow, 10 minutes, at the table.\" The brain stops replaying what's been calendared."},
+ {n:"Orient & Describe", m:"90 seconds · dissociation · fog", s:"Slowly look around the room. Out loud, name 5 ordinary objects and one fact about each: color, shape, use. You're not drowning in the feeling — you're walking back into the room."},
+ {n:"Movement Minute", m:"60 seconds · stagnant heaviness", s:"Stand up. Shake out your hands for 15s. Roll shoulders 15s. March or dance in place 30s — chat picks the song vibe. Movement metabolizes stress chemistry; it doesn't need to be a workout."},
+ {n:"Cold Water Shift", m:"1 minute · spiral · strong sensations", s:"Cold water on the wrists, face, or hold a cold can/cube in your hands. Big safe temperature change interrupts a spiral by giving the nervous system something louder to report. (Skip if you're heart-sensitive.)"},
+ {n:"Worry Drop-Box (community)", m:"5 minutes · a Safe's Playce original", s:"Chat drops ONE worry. Host reads a few aloud. The room answers with SUPPORT, not solutions: \"that sounds heavy — you're not carrying it alone tonight.\" Nobody fixes. Everybody holds."}
+];
+// ================= WIND-DOWN =================
+const WIND=[
+ "<b>Announce the close.</b> \"Alright hive — screens get heavy this time of night. Let's land the plane together.\"",
+ "<b>Chat gratitude wall.</b> Everyone types one good thing from this week. Read 3-4 aloud, slowly, by name.",
+ "<b>One look-forward.</b> Each person names ONE thing they're looking forward to — no matter how small.",
+ "<b>Breathe together.</b> Breathe tab → 5-5 pattern, 5 cycles. Lights low if you can.",
+ "<b>The closing line.</b> \"You made it to the end of another week. That's not nothing — that's the whole assignment.\"",
+ "<b>Schedule reminder.</b> Say the next stream day + time out loud AND type it in chat.",
+ "<b>Hard stop.</b> Say goodnight, end stream, close the app, drink water. The DMs will keep. — protective over productive."
+];
+
+// ================= ENGINE =================
+const $=id=>document.getElementById(id);
+// tabs
+const pages=document.querySelectorAll(".page");
+document.querySelectorAll("#tabs button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    pages.forEach(p=>p.classList.remove("show"));
+    $("page-"+b.dataset.page).classList.add("show");
+    if(b.dataset.page==="breathe") stopBreath();
+  };
+});
+
+// ---------- breathing ----------
+const ring=$("ring"), halo=$("halo"), phaseTxt=$("phaseTxt"),
+      patTag=$("patTag"), startBtn=$("startBtn"), breathStat=$("breathStat");
+let pi=0, running=false, phase=0, secLeft=0, cycles=0, t=null;
+
+const patBox=$("patterns");
+PATTERNS.forEach((p,i)=>{
+  const b=document.createElement("button");
+  b.textContent=p.name+" "+p.steps.map(s=>s[1]).join("-");
+  if(i===0)b.classList.add("active");
+  b.onclick=()=>{pi=i; [...patBox.children].forEach(c=>c.classList.remove("active")); b.classList.add("active"); stopBreath(); patTag.textContent=p.tag;};
+  patBox.appendChild(b);
+});
+patTag.textContent=PATTERNS[0].tag;
+
+function setPhase(i){
+  const [label,secs]=PATTERNS[pi].steps[i];
+  secLeft=secs;
+  if(label==="Breathe in"){
+    ring.style.transition="transform "+secs+"s ease-in-out";
+    halo.style.transition="transform "+secs+"s ease-in-out";
+    ring.style.transform="scale(1.45)"; halo.style.transform="scale(1.18)";
+  }else if(label==="Breathe out"){
+    ring.style.transition="transform "+secs+"s ease-in-out";
+    halo.style.transition="transform "+secs+"s ease-in-out";
+    ring.style.transform="scale(1)"; halo.style.transform="scale(1)";
+  }
+  phaseTxt.innerHTML=label+"<small>follow the light</small>";
+}
+function tick(){
+  if(!running)return;
+  phaseTxt.innerHTML=PATTERNS[pi].steps[phase][0]+" — "+secLeft+"<small>follow the light</small>";
+  secLeft--;
+  if(secLeft<0){
+    phase=(phase+1)%PATTERNS[pi].steps.length;
+    if(phase===0){cycles++; breathStat.textContent=cycles+(cycles===1?" cycle":" cycles")+" complete";}
+    setPhase(phase);
+  }
+}
+function startBreath(){
+  running=true; startBtn.textContent="■ STOP"; startBtn.classList.add("stop");
+  cycles=0; breathStat.textContent="0 cycles";
+  phase=0; setPhase(0); t=setInterval(tick,1000);
+}
+function stopBreath(){
+  running=false; if(t)clearInterval(t);
+  startBtn.textContent="▶ START"; startBtn.classList.remove("stop");
+  ring.style.transform="scale(1)"; halo.style.transform="scale(1)";
+  phaseTxt.innerHTML="ready?<small>press start · follow the light</small>";
+}
+startBtn.onclick=()=>running?stopBreath():startBreath();
+
+// ---------- skills (shuffle bag, no blanks) ----------
+const bag=[];
+const cleanSkills=SKILLS.filter(s=>s.s.length>0);
+function drawSkill(){
+  if(bag.length===0){
+    cleanSkills.forEach((s,i)=>bag.push(i));
+    for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [bag[i],bag[j]]=[bag[j],bag[i]];}
+    bag.pop(); // avoid instant repeat
+  }
+  const s=cleanSkills[bag.pop()];
+  $("skillName").textContent=s.n;
+  $("skillMeta").textContent=(s.m?s.m+" · ":"")+"2-5 min on stream";
+  $("skillScript").innerHTML=s.s;
+  $("skillCount").textContent=bag.length+" left in the bag";
+}
+$("skillDraw").onclick=drawSkill;
+document.addEventListener("keydown",e=>{
+  if($("page-skills").classList.contains("show") && (e.code==="Space"||e.code==="Enter")){e.preventDefault(); drawSkill();}
+});
+
+// ---------- wind-down ----------
+let windSecs=300, windLeft=300, windRun=false, windT=null;
+const face=$("timerFace");
+function paint(){
+  const m=Math.floor(windLeft/60), s=windLeft%60;
+  face.textContent=m+":"+(s<10?"0":"")+s;
+  face.classList.toggle("done", windLeft===0);
+}
+document.querySelectorAll("#page-winddown .patterns button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#page-winddown .patterns button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    windSecs=windLeft=parseInt(b.dataset.min)*60; windRun=false; if(windT)clearInterval(windT);
+    $("timerStart").textContent="▶ START"; paint();
+  };
+});
+$("timerStart").onclick=()=>{
+  if(windRun){windRun=false; clearInterval(windT); $("timerStart").textContent="▶ START"; return;}
+  if(windLeft===0)windLeft=windSecs;
+  windRun=true; $("timerStart").textContent="❚❚ PAUSE";
+  windT=setInterval(()=>{
+    if(windLeft>0){windLeft--; paint();}
+    if(windLeft===0){windRun=false; clearInterval(windT); $("timerStart").textContent="▶ START";}
+  },1000);
+};
+$("timerReset").onclick=()=>{windRun=false; if(windT)clearInterval(windT); windLeft=windSecs; $("timerStart").textContent="▶ START"; paint();};
+const windList=$("windSteps");
+WIND.forEach(step=>{
+  const li=document.createElement("li");
+  li.innerHTML=step;
+  li.onclick=()=>li.classList.toggle("done");
+  windList.appendChild(li);
+});
+paint();
+</script>
+</body>
+</html>
