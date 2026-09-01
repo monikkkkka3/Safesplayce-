@@ -58,6 +58,35 @@ The `gradlew` script downloads the small `gradle-wrapper.jar` on first run
 (same thing Android Studio does), then downloads Gradle 8.7 once. After that
 everything is cached. On Windows, use `gradlew.bat`.
 
+### Option C — one-click script (no Android Studio)
+
+```bash
+cd livestream/android
+./build.sh --no-install   # just builds the APK
+./build.sh                # builds + tries to install on a connected phone via adb
+```
+
+### Option D — GitHub Actions (builds the APK for you, no local machine needed)
+
+Pushing a commit to this repo runs **.github/workflows/android-build.yml**
+automatically and uploads the APK as a downloadable artifact. This is the
+easiest way to get it onto a phone without a computer handy.
+
+## Open it on your phone
+
+There are two ways:
+
+1. **From a built APK file** — download/tap the `.apk`, choose **Install**,
+   and (first tap only) allow *Install unknown apps* for that source. This is
+   the debug-signed APK and installs fine on your own phone.
+2. **From GitHub Actions (no computer needed for the build)** — in the repo,
+   go to **Actions → Build Android APK → latest run**, download the
+   **livestream-android-apk** artifact, unzip it, then send the
+   `app-debug.apk` to your phone and tap it to install.
+
+> The app works fully offline once installed — no TikTok or internet needed
+> while you stream.
+
 ## What the app can and can't do right now
 
 - Shows the **Game Console** on launch (spelling bee, word ladders, categories,
