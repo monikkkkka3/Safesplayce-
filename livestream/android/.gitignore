@@ -1,0 +1,12 @@
+# Android Studio / Gradle generated files
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Do not commit machine-specific SDK paths
+local.properties

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Safe\u2019s Playce</string>
+    <string name="btn_game_console">\uD83D\uDC1D Game Console</string>
+    <string name="btn_toolbox_console">\uD83E\uDDF0 Coping Toolbox</string>
+</resources>

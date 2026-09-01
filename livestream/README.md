@@ -26,6 +26,7 @@
 | [`growth-plan.md`](growth-plan.md) | Comeback month, clip flywheel, metrics targets |
 | [`metrics.md`](metrics.md) | The log — 5 minutes after every stream |
 | [`word-games/`](word-games/) | **The arsenal** — see below |
+| [`android/`](android/) | **The Android app.** Offline APK wrapper for both consoles — see `android/README.md` |
 
 ### The word-game arsenal (`livestream/word-games/`)
 

@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+#
+# Safe's Playce — Livestream Android launcher.
+# Self-bootstrapping wrapper: if the Gradle wrapper JAR is missing (it is not
+# committed to git), download it on first run, then run the usual Gradle task.
+#
+# Usage:
+#   ./gradlew assembleDebug      -> build a debug APK
+#   ./gradlew installDebug       -> build + install on a connected device
+#
+set -e
+
+APP_HOME=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+WRAPPER_JAR="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+WRAPPER_URL="https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar"
+
+warn() { echo "WARN: $*" >&2; }
+die() { echo "ERROR: $*" >&2; exit 1; }
+
+[ -n "$JAVA_HOME" ] && JAVA="$JAVA_HOME/bin/java" || JAVA=java
+command -v "$JAVA" >/dev/null 2>&1 || die "Java not found. Install JDK 17 (or set JAVA_HOME)."
+
+if [ ! -f "$WRAPPER_JAR" ]; then
+  echo "Gradle wrapper JAR not found — downloading once into $WRAPPER_JAR"
+  mkdir -p "$(dirname "$WRAPPER_JAR")"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$WRAPPER_URL" -o "$WRAPPER_JAR"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q "$WRAPPER_URL" -O "$WRAPPER_JAR"
+  else
+    die "Need curl or wget to download the Gradle wrapper JAR."
+  fi
+  [ -s "$WRAPPER_JAR" ] || die "Downloaded Gradle wrapper JAR is empty — check network / proxy."
+fi
+
+exec "$JAVA" -Dorg.gradle.appname=gradlew -classpath "$WRAPPER_JAR" org.gradle.wrapper.GradleWrapperMain "$@"
