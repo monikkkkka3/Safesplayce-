@@ -68,9 +68,22 @@ cd livestream/android
 
 ### Option D — GitHub Actions (builds the APK for you, no local machine needed)
 
-Pushing a commit to this repo runs **.github/workflows/android-build.yml**
-automatically and uploads the APK as a downloadable artifact. This is the
-easiest way to get it onto a phone without a computer handy.
+There's a ready-to-use CI workflow in
+**`livestream/android/ci/android-build.yml`**. It builds the debug APK and
+uploads it as an artifact you can download straight to your phone.
+
+The current Arena/GitHub connection can't push into `.github/workflows/`
+directly (GitHub requires `workflows` permission for that), so the file is
+kept at `livestream/android/ci/android-build.yml`. To activate it:
+
+1. Move/copy it into place: `.github/workflows/android-build.yml`
+   (easiest is from the GitHub web UI: **Add file → Create new file**).
+2. Push a change (or press **Run workflow** on GitHub).
+3. In **Actions → Build Android APK → latest run**, download the
+   **livestream-android-apk** artifact.
+
+If you'd rather I open a pull request that adds the workflow to the repo, just
+say so — but the file will still need a push with `workflows` permission.
 
 ## Open it on your phone
 
@@ -79,10 +92,11 @@ There are two ways:
 1. **From a built APK file** — download/tap the `.apk`, choose **Install**,
    and (first tap only) allow *Install unknown apps* for that source. This is
    the debug-signed APK and installs fine on your own phone.
-2. **From GitHub Actions (no computer needed for the build)** — in the repo,
-   go to **Actions → Build Android APK → latest run**, download the
-   **livestream-android-apk** artifact, unzip it, then send the
-   `app-debug.apk` to your phone and tap it to install.
+2. **From GitHub Actions (no computer needed for the build)** — once the CI
+   workflow is enabled (see **Option D**), go to **Actions → Build Android
+   APK → latest run**, download the **livestream-android-apk** artifact,
+   unzip it, then send the `app-debug.apk` to your phone and tap it to
+   install.
 
 > The app works fully offline once installed — no TikTok or internet needed
 > while you stream.

@@ -3,15 +3,17 @@ name: Build Android APK
 # Builds the Safe's Playce livestream Android app automatically and uploads the
 # installable APK so you can download it straight to your phone.
 #
+# To activate this workflow, place this file at:
+#   .github/workflows/android-build.yml
+# (The Arena/GitHub connection here can't write into .github/workflows/, so the
+# file lives in livestream/android/ci/ until you move it.)
+#
 # How to get the APK on your phone:
 #   1. Push a change (or press "Run workflow" on GitHub).
 #   2. Open this repo -> Actions -> "Build Android APK" -> latest run.
 #   3. Scroll to "Artifacts" -> download "livestream-android-apk".
 #   4. Open the .zip, take the app-debug.apk over to your phone, tap it, and
 #      allow "Install unknown apps" (it's a debug-signed APK).
-#
-# The debug APK is signed with Android's standard debug keystore, so it installs
-# fine on your own phone. For the Play Store you'd add a release signing setup later.
 
 on:
   push:
