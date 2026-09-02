@@ -1,4 +1,4 @@
-name: Jekyll site CI
+.github/workflows/jekyll-docker.ymlname: Jekyll site CI
 
 on:
   push:
